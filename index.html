@@ -263,7 +263,19 @@
 
         .task-list {
             list-style: none;
+            max-height: 550px;
+            overflow-y: hidden;
+            overflow-x: hidden; 
+            padding: 0;
+            margin: 0;
+            scrollbar-width: thin; 
+            scrollbar-color: #888 #f0f0f0; 
+            transition: overflow-y 0.2s ease; 
         }
+        .task-list:hover {
+            overflow-y: auto; 
+        }
+
 
         .task-item {
             display: flex;
