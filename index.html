@@ -1,212 +1,584 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Checklist</title>
+    <title>Produtividade Diária</title>
     <style>
-        /* Estilo para itens marcados */
-        body {
-            font-family: Arial, sans-serif;
-            text-align: center;
-            background-color: #f4f4f4;
+        :root {
+            --primary: #4A90E2;
+            --success: #2ECC71;
+            --warning: #F1C40F;
+            --danger: #E74C3C;
+            --dark: #2C3E50;
+            --light: #ECF0F1;
+        }
+
+        * {
+            box-sizing: border-box;
             margin: 0;
             padding: 0;
         }
 
-        h1 {
-            font-size: 24px;
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background-color: var(--light);
+            color: var(--dark);
+            line-height: 1.6;
         }
 
-        #checklist-form {
-            margin-bottom: 20px;
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
         }
 
-        ul {
-            list-style: none;
-            padding: 0;
+        .header {
+            text-align: center;
+            margin-bottom: 2rem;
+            padding: 1rem;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
         }
 
-        li {
-            font-size: 18px;
-            margin: 10px 0;
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 2rem;
+        }
+
+        .card {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .input-group {
             display: flex;
-            align-items: center;
-            justify-content: center;
-            text-align: justify;
-            cursor: pointer; /* Adicionado para indicar que a palavra é clicável */
+            gap: 10px;
+            margin-bottom: 1rem;
         }
 
-        .delete-button {
-            background-color: #ff5733;
+        input[type="text"] {
+            flex: 1;
+            padding: 10px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            font-size: 1rem;
+        }
+
+        button {
+            background: var(--primary);
             color: white;
             border: none;
-            padding: 5px 10px;
+            padding: 10px 20px;
+            border-radius: 5px;
             cursor: pointer;
-            margin-left: 10px; /* Adicionado espaço à esquerda do botão */
+            font-size: 1rem;
+            transition: background 0.3s ease;
         }
 
-        /* Estilo para itens marcados */
-        li.checked {
+        button:hover {
+            background: #357ABD;
+        }
+
+        .task-list {
+            list-style: none;
+        }
+
+        .task-item {
+            display: flex;
+            align-items: center;
+            padding: 10px;
+            margin: 5px 0;
+            background: var(--light);
+            border-radius: 5px;
+            transition: all 0.3s ease;
+        }
+
+        .task-item:hover {
+            transform: translateX(5px);
+        }
+
+        .task-item.completed {
+            opacity: 0.7;
             text-decoration: line-through;
         }
 
-        #item {
-            width: auto;
-            padding: 5px;
+        .task-checkbox {
+            margin-right: 10px;
+            width: 20px;
+            height: 20px;
         }
 
-        #add-button {
+        .task-text {
+            flex: 1;
+        }
+
+        .task-delete {
+            background: var(--danger);
             padding: 5px 10px;
+            font-size: 0.8rem;
         }
 
-        #chart-container {
-            display: none;
-            position: fixed;
-            top: 10px;
-            right: 10px;
+        .pomodoro {
+            text-align: center;
+        }
+
+        .timer {
+            font-size: 3rem;
+            font-weight: bold;
+            margin: 1rem 0;
+        }
+
+        .timer-controls {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+        }
+
+        .progress-chart {
             width: 200px;
             height: 200px;
+            margin: 0 auto;
+            position: relative;
         }
 
-        #chart {
+        .progress-circle {
             width: 100%;
             height: 100%;
-            background: conic-gradient(
-                    #36A2EB var(--percent-completed, 0%) 0%,
-                    #FFCE56 var(--percent-completed, 0%) 100%
-            );
             border-radius: 50%;
+            background: conic-gradient(
+                var(--primary) var(--progress, 0%),
+                #ddd var(--progress, 0%)
+            );
         }
 
-        #percentage-label {
-            text-align: center;
-            font-size: 16px;
-            margin-top: 10px;
+        .progress-text {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 1.5rem;
+            font-weight: bold;
         }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin-top: 1rem;
+        }
+
+        .stat-card {
+            background: var(--light);
+            padding: 10px;
+            border-radius: 5px;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--primary);
+        }
+
+        .timer-settings {
+            margin: 1rem 0;
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .timer-mode {
+            padding: 8px 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            background: var(--light);
+            border: 2px solid var(--primary);
+            color: var(--primary);
+            font-weight: bold;
+        }
+
+        .timer-mode.active {
+            background: var(--primary);
+            color: white;
+        }
+
+        select {
+            padding: 8px;
+            border-radius: 5px;
+            border: 2px solid #ddd;
+            font-size: 1rem;
+            background: white;
+        }
+
     </style>
 </head>
 <body>
-<h1>CheckList</h1>
+    <div class="container">
+        <div class="header">
+            <h1>Produtividade Diária</h1>
+        </div>
 
-<form id="checklist-form">
-    <input type="text" id="item" placeholder="Digite um item" required>
-    <button type="button" onclick="addItem()" id="add-button">Adicionar</button>
-</form>
+        <div class="grid">
+            <div class="card">
+                <h2>Tarefas</h2>
+                <div class="input-group">
+                    <input type="text" id="taskInput" placeholder="Nova tarefa...">
+                    <button onclick="addTask()">Adicionar</button>
+                </div>
+                <ul id="taskList" class="task-list"></ul>
+            </div>
 
-<ul id="checklist">
-    <!-- Itens serão adicionados aqui -->
-</ul>
+            <div class="card pomodoro">
+                <h2>Pomodoro Timer</h2>
+                <div class="timer-settings">
+                    <button class="timer-mode active" onclick="switchMode('work')" id="workMode">
+                        Trabalho
+                    </button>
+                    <button class="timer-mode" onclick="switchMode('break')" id="breakMode">
+                        Descanso
+                    </button>
+                </div>
+                <div class="timer-settings">
+                    <select id="workTime" onchange="updateWorkTime()">
+                        <option value="15">15 min</option>
+                        <option value="20">20 min</option>
+                        <option value="25" selected>25 min</option>
+                        <option value="30">30 min</option>
+                        <option value="45">45 min</option>
+                        <option value="60">60 min</option>
+                    </select>
+                    <select id="breakTime" onchange="updateBreakTime()">
+                        <option value="3">3 min</option>
+                        <option value="5" selected>5 min</option>
+                        <option value="10">10 min</option>
+                        <option value="15">15 min</option>
+                    </select>
+                </div>
+                <div class="timer" id="timer">25:00</div>
+                <div class="timer-controls">
+                    <button onclick="startTimer()" id="startBtn">Iniciar</button>
+                    <button onclick="pauseTimer()" id="pauseBtn">Pausar</button>
+                    <button onclick="resetTimer()" id="resetBtn">Resetar</button>
+                </div>
+                <div class="stats">
+                    <div class="stat-card">
+                        <div class="stat-value" id="pomodorosCompleted">0</div>
+                        <div>Pomodoros</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="totalFocusTime">0</div>
+                        <div>Minutos Focados</div>
+                    </div>
+                </div>
+            </div>
 
-<div id="chart-container">
-    <div id="chart"></div>
-    <div id="percentage-label">0%</div>
-</div>
+            <div class="card">
+                <h2>Progresso</h2>
+                <div class="progress-chart">
+                    <div class="progress-circle" id="progressCircle"></div>
+                    <div class="progress-text" id="progressText">0%</div>
+                </div>
+            </div>
+        </div>
+    </div>
 
-<script>
-    let totalItems = 0;
-    let checklistData = []; // Array para armazenar os itens da lista de verificação
+    <script>
+        // Estado da aplicação atualizado
+        let tasks = [];
+        let timer = {
+            minutes: 25,
+            seconds: 0,
+            isRunning: false,
+            interval: null,
+            mode: 'work', // novo: modo atual (work/break)
+            workTime: 25, // novo: tempo de trabalho em minutos
+            breakTime: 5  // novo: tempo de descanso em minutos
+        };
+        let stats = {
+            pomodorosCompleted: 0,
+            totalFocusTime: 0
+        };
 
-    // Função para atualizar a lista de verificação na página
-    function updateChecklist() {
-        const checklist = document.getElementById("checklist");
-        checklist.innerHTML = ""; // Limpa a lista atual
-
-        let completedItems = 0;
-
-        for (let i = 0; i < checklistData.length; i++) {
-            const itemData = checklistData[i];
-
-            const newItem = document.createElement("li");
-            newItem.textContent = itemData.text;
-            newItem.className = itemData.completed ? "checked" : "";
-
-            const deleteButton = document.createElement("button");
-            deleteButton.className = "delete-button";
-            deleteButton.textContent = "Excluir";
-
-            // Adiciona um ouvinte de evento para marcar ou desmarcar o item
-            newItem.addEventListener("click", function () {
-                itemData.completed = !itemData.completed;
-                updateChart();
-                updateChecklist();
-                saveData();
-            });
-
-            // Adiciona um ouvinte de evento para excluir o item
-            deleteButton.addEventListener("click", function (event) {
-                event.stopPropagation(); // Impede que o evento de clique no item seja acionado
-                checklistData.splice(i, 1); // Remove o item do array
-                updateChart();
-                updateChecklist();
-                saveData();
-            });
-
-            newItem.appendChild(deleteButton);
-            checklist.appendChild(newItem);
-
-            if (itemData.completed) {
-                completedItems++;
+        // Funções para gerenciamento de tarefas
+        function addTask() {
+            const input = document.getElementById('taskInput');
+            const text = input.value.trim();
+            
+            if (text) {
+                tasks.push({
+                    id: Date.now(),
+                    text,
+                    completed: false
+                });
+                input.value = '';
+                updateTasks();
+                saveTasks();
             }
         }
 
-        totalItems = checklistData.length;
+        function toggleTask(id) {
+            const task = tasks.find(t => t.id === id);
+            if (task) {
+                task.completed = !task.completed;
+                updateTasks();
+                saveTasks();
+            }
+        }
 
-        // Atualiza o gráfico com base nos itens concluídos
-        updateChart(completedItems);
+        function deleteTask(id) {
+            tasks = tasks.filter(t => t.id !== id);
+            updateTasks();
+            saveTasks();
+        }
+
+        function updateTasks() {
+            const list = document.getElementById('taskList');
+            list.innerHTML = '';
+            
+            tasks.forEach(task => {
+                const li = document.createElement('li');
+                li.className = `task-item ${task.completed ? 'completed' : ''}`;
+                
+                li.innerHTML = `
+                    <input type="checkbox" class="task-checkbox" 
+                           ${task.completed ? 'checked' : ''} 
+                           onchange="toggleTask(${task.id})">
+                    <span class="task-text">${task.text}</span>
+                    <button class="task-delete" onclick="deleteTask(${task.id})">
+                        Deletar
+                    </button>
+                `;
+                
+                list.appendChild(li);
+            });
+
+            updateProgress();
+        }
+
+        // Funções para o timer Pomodoro
+        function startTimer() {
+            if (!timer.isRunning) {
+                timer.isRunning = true;
+                timer.interval = setInterval(updateTimer, 1000);
+                document.getElementById('startBtn').disabled = true;
+            }
+        }
+
+        function pauseTimer() {
+            timer.isRunning = false;
+            clearInterval(timer.interval);
+            document.getElementById('startBtn').disabled = false;
+        }
+
+        function resetTimer() {
+            pauseTimer();
+            timer.minutes = 25;
+            timer.seconds = 0;
+            updateTimerDisplay();
+        }
+
+        function updateTimer() {
+            if (timer.seconds === 0) {
+                if (timer.minutes === 0) {
+                    pomodoroComplete();
+                    return;
+                }
+                timer.minutes--;
+                timer.seconds = 59;
+            } else {
+                timer.seconds--;
+            }
+            
+            updateTimerDisplay();
+        }
+
+        function updateTimerDisplay() {
+            const display = document.getElementById('timer');
+            display.textContent = `${String(timer.minutes).padStart(2, '0')}:${String(timer.seconds).padStart(2, '0')}`;
+        }
+
+        function pomodoroComplete() {
+        pauseTimer();
+        stats.pomodorosCompleted++;
+        stats.totalFocusTime += 25;
+        updateStats();
+        
+        // Notificação sonora e visual
+        alert("Pomodoro completo! Hora de uma pausa.");
+        
+        // Reiniciar o timer
+        resetTimer();
     }
 
-    function updateChart(completedItems) {
-        const chartContainer = document.getElementById("chart-container");
-        const chart = document.getElementById("chart");
-        const percentageLabel = document.getElementById("percentage-label");
+    // Novas funções para gerenciamento do timer
+    function switchMode(mode) {
+            timer.mode = mode;
+            document.getElementById('workMode').classList.toggle('active', mode === 'work');
+            document.getElementById('breakMode').classList.toggle('active', mode === 'break');
+            
+            // Atualizar timer para o tempo correto do modo
+            timer.minutes = mode === 'work' ? timer.workTime : timer.breakTime;
+            timer.seconds = 0;
+            
+            // Resetar o timer
+            pauseTimer();
+            updateTimerDisplay();
+        }
 
-        if (totalItems === 0) {
-            chartContainer.style.display = "none"; // Esconde o gráfico quando não há itens
-        } else {
-            chartContainer.style.display = "block"; // Mostra o gráfico quando há itens
-            const percentCompleted = (completedItems / totalItems) * 100;
-            chart.style.setProperty('--percent-completed', `${percentCompleted}%`);
-            percentageLabel.textContent = `${Math.round(percentCompleted)}% concluído`;
+        function updateWorkTime() {
+            const newTime = parseInt(document.getElementById('workTime').value);
+            timer.workTime = newTime;
+            if (timer.mode === 'work') {
+                resetTimer();
+            }
+        }
+
+        function updateBreakTime() {
+            const newTime = parseInt(document.getElementById('breakTime').value);
+            timer.breakTime = newTime;
+            if (timer.mode === 'break') {
+                resetTimer();
+            }
+        }
+
+        // Função resetTimer atualizada
+        function resetTimer() {
+            pauseTimer();
+            timer.minutes = timer.mode === 'work' ? timer.workTime : timer.breakTime;
+            timer.seconds = 0;
+            updateTimerDisplay();
+        }
+
+        // Função pomodoroComplete atualizada
+        function pomodoroComplete() {
+            pauseTimer();
+            
+            if (timer.mode === 'work') {
+                stats.pomodorosCompleted++;
+                stats.totalFocusTime += timer.workTime;
+                updateStats();
+                alert("Pomodoro completo! Hora de uma pausa.");
+                switchMode('break');
+            } else {
+                alert("Pausa completa! Hora de voltar ao trabalho.");
+                switchMode('work');
+            }
+        }
+
+    function updateStats() {
+        document.getElementById('pomodorosCompleted').textContent = stats.pomodorosCompleted;
+        document.getElementById('totalFocusTime').textContent = stats.totalFocusTime;
+        updateProgress();
+    }
+
+    function updateProgress() {
+        const totalTasks = tasks.length;
+        const completedTasks = tasks.filter(t => t.completed).length;
+        const progressPercent = totalTasks === 0 ? 0 : Math.round((completedTasks / totalTasks) * 100);
+        
+        const circle = document.getElementById('progressCircle');
+        const text = document.getElementById('progressText');
+        
+        circle.style.setProperty('--progress', `${progressPercent}%`);
+        text.textContent = `${progressPercent}%`;
+    }
+
+    // Persistência de dados
+    function saveTasks() {
+        localStorage.setItem('tasks', JSON.stringify(tasks));
+        localStorage.setItem('stats', JSON.stringify(stats));
+    }
+
+    function loadTasks() {
+        const savedTasks = localStorage.getItem('tasks');
+        const savedStats = localStorage.getItem('stats');
+        
+        if (savedTasks) {
+            tasks = JSON.parse(savedTasks);
+            updateTasks();
+        }
+        
+        if (savedStats) {
+            stats = JSON.parse(savedStats);
+            updateStats();
         }
     }
 
-    function addItem() {
-        const itemInput = document.getElementById("item");
-        const newItemText = itemInput.value.trim();
-
-        if (newItemText !== "") {
-            const newItemData = { text: newItemText, completed: false };
-            checklistData.push(newItemData);
-            itemInput.value = "";
-
-            updateChecklist();
-            saveData();
-        }
-    }
-
-    // Função para salvar os dados da lista de verificação no armazenamento local
-    function saveData() {
-        localStorage.setItem("checklistData", JSON.stringify(checklistData));
-    }
-
-    // Função para carregar os dados da lista de verificação do armazenamento local
-    function loadData() {
-        const storedData = localStorage.getItem("checklistData");
-        if (storedData) {
-            checklistData = JSON.parse(storedData);
-        }
-        updateChecklist();
-    }
-
-    // Carrega os dados da lista de verificação ao carregar a página
-    loadData();
-
-    // Adiciona um ouvinte de evento para a tecla "Enter"
-    document.getElementById("item").addEventListener("keydown", function (event) {
-        if (event.key === "Enter") {
-            addItem();
-            event.preventDefault(); // Impede o comportamento padrão de "Enter" (enviar o formulário)
+    // Event Listeners
+    document.getElementById('taskInput').addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            addTask();
         }
     });
+
+    // Inicialização
+    document.addEventListener('DOMContentLoaded', function() {
+        loadTasks();
+        updateTimerDisplay();
+        updateProgress();
+
+        // Carregar configurações salvas do timer
+        const savedTimer = localStorage.getItem('timerConfig');
+            if (savedTimer) {
+                const config = JSON.parse(savedTimer);
+                timer.workTime = config.workTime;
+                timer.breakTime = config.breakTime;
+                document.getElementById('workTime').value = timer.workTime;
+                document.getElementById('breakTime').value = timer.breakTime;
+            }
+        
+        // Registrar Service Worker para PWA
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('/sw.js').catch(function(err) {
+                console.log('Service Worker registration failed:', err);
+            });
+        }
+    });
+
+    // Tema claro/escuro
+    function toggleTheme() {
+        document.body.classList.toggle('dark-theme');
+        localStorage.setItem('theme', document.body.classList.contains('dark-theme') ? 'dark' : 'light');
+    }
+
+    // Aplicar tema salvo
+    const savedTheme = localStorage.getItem('theme');
+    if (savedTheme === 'dark') {
+        document.body.classList.add('dark-theme');
+    }
+
+    // Adicionar shortcuts de teclado
+    document.addEventListener('keydown', function(e) {
+        // Alt + N para nova tarefa
+        if (e.altKey && e.key === 'n') {
+            document.getElementById('taskInput').focus();
+        }
+        // Alt + P para iniciar/pausar pomodoro
+        if (e.altKey && e.key === 'p') {
+            if (timer.isRunning) {
+                pauseTimer();
+            } else {
+                startTimer();
+            }
+        }
+    });
+
+    // Salvar configurações do timer
+    function saveTimerConfig() {
+            localStorage.setItem('timerConfig', JSON.stringify({
+                workTime: timer.workTime,
+                breakTime: timer.breakTime
+            }));
+        }
 </script>
+
+<!-- Adicionar manifesto PWA -->
+<link rel="manifest" href="data:application/json;base64,ewogICJuYW1lIjogIlByb2R1Y3Rpdml0eSBIdWIiLAogICJzaG9ydF9uYW1lIjogIlByb2RIdWIiLAogICJzdGFydF91cmwiOiAiLyIsCiAgImRpc3BsYXkiOiAic3RhbmRhbG9uZSIsCiAgImJhY2tncm91bmRfY29sb3IiOiAiI2ZmZmZmZiIsCiAgInRoZW1lX2NvbG9yIjogIiM0QTkwRTIiCn0=">
+
 </body>
 </html>
