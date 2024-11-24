@@ -394,15 +394,15 @@
             font-size: 0.8rem;
         }
 
-        .priority-high {
+        .priority-alta {
             border-left: 4px solid var(--danger);
         }
 
-        .priority-medium {
+        .priority-média {
             border-left: 4px solid var(--warning);
         }
 
-        .priority-low {
+        .priority-baixa {
             border-left: 4px solid var(--success);
         }
 
@@ -497,26 +497,31 @@
             margin: 5px 0;
         }
 
-        .notification {
+        .notification { 
             position: fixed;
             bottom: 20px;
-            right: 20px;
+            left: 20px; 
             background: white;
-            padding: 15px;
-            border-radius: 5px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            padding: 20px 30px;
+            font-size: 18px;
+            width: 300px;
+            border-radius: 8px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
             display: none;
-            animation: slideIn 0.3s ease;
+            animation: slideIn 0.5s ease-out; 
         }
 
         @keyframes slideIn {
             from {
-                transform: translateX(100%);
+                left: -350px; 
+                opacity: 0; 
             }
             to {
-                transform: translateX(0);
+                left: 20px; 
+                opacity: 1; 
             }
         }
+
 
         .dark-theme {
             background-color: var(--dark);
@@ -587,9 +592,9 @@
                 <div class="input-group">
                     <input type="text" id="taskInput" placeholder="Nova tarefa...">
                     <select id="taskPriority" class="custom-select">
-                        <option value="Baixa">Baixa</option>
-                        <option value="Média">Média</option>
-                        <option value="Alta">Alta</option>
+                        <option value="baixa">Baixa</option>
+                        <option value="média">Média</option>
+                        <option value="alta">Alta</option>
                     </select>
                     <select id="taskCategory" class="custom-select">
                         <option value="trabalho">Trabalho</option>
@@ -793,6 +798,9 @@
             const task = tasks.find(t => t.id === id);
             if (task) {
                 task.completed = !task.completed;
+                if (task.completed) {
+                task.completedAt = new Date().toISOString();
+            } 
                 updateTasks();
                 saveTasks();
             }
@@ -1190,7 +1198,7 @@
 
             const pendingHighPriority = tasks.filter(t => 
                 !t.completed && 
-                t.priority === 'high'
+                t.priority === 'alta'
             ).length;
 
             const averageCompletionTime = calculateAverageCompletionTime();
