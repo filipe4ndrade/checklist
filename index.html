@@ -242,15 +242,15 @@
             refreshTaskList();
         }
         
-        // 8. Limpa todas as tarefas concluídas
+        // 8. Limpa todas as tarefas concluídas (CORRIGIDO: Removida a confirmação)
         function clearCompletedTasks() {
-            const pendingTasks = tasks.filter(task => !task.completed);
-            if (pendingTasks.length < tasks.length) {
-                 // Cria uma simulação de modal/confirmação
-                if (window.confirm("Tem certeza que deseja remover todas as tarefas concluídas?")) {
-                    tasks = pendingTasks;
-                    refreshTaskList();
-                }
+            const initialTaskCount = tasks.length;
+            // Filtra as tarefas, mantendo apenas as que NÃO estão completadas
+            tasks = tasks.filter(task => !task.completed);
+            
+            // Só atualiza se houve remoção de tarefas (para evitar chamadas desnecessárias)
+            if (tasks.length < initialTaskCount) {
+                refreshTaskList();
             }
         }
 
