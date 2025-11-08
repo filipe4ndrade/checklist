@@ -1,391 +1,291 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-br">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Foco & Fluxo | Seu Gerenciador de Tarefas Minimalista</title>
-    
-    <!-- Tailwind CSS para estilização rápida e moderna -->
+    <title>Checklist Prática com Tailwind e JavaScript</title>
+    <!-- Carrega Tailwind CSS para estilização moderna e responsiva -->
     <script src="https://cdn.tailwindcss.com"></script>
-    
-    <!-- Lucide Icons para ícones minimalistas -->
-    <script src="https://unpkg.com/lucide@latest"></script>
-
-    <!-- Google Fonts: Inter, uma fonte limpa e moderna -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-
     <style>
-        /* Estilos customizados para complementar o Tailwind */
-        body {
-            font-family: 'Inter', sans-serif;
-            -webkit-font-smoothing: antialiased;
-            -moz-osx-font-smoothing: grayscale;
+        /* Define a fonte Inter como padrão */
+        body { font-family: 'Inter', sans-serif; }
+        /* Esconde a checkbox original para que possamos estilizar o seu label */
+        input[type="checkbox"] {
+            display: none;
         }
-
-        /* Fundo gradiente sutil para um visual mais profundo */
-        body {
-            background-color: #0a0a0a;
-            background-image: radial-gradient(circle at 1px 1px, #292929 1px, transparent 0);
-            background-size: 20px 20px;
+        /* Estilo da tarefa (li) */
+        .task-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 16px;
+            margin-bottom: 8px;
+            background-color: #f9fafb;
+            border-left: 5px solid #3b82f6; /* Borda azul inicial */
+            transition: all 0.3s ease;
+            cursor: pointer;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
         }
-
-        /* Estilização da barra de rolagem */
-        ::-webkit-scrollbar {
-            width: 8px;
-        }
-        ::-webkit-scrollbar-track {
-            background: #1a1a1a;
-        }
-        ::-webkit-scrollbar-thumb {
-            background: #333;
-            border-radius: 10px;
-        }
-        ::-webkit-scrollbar-thumb:hover {
-            background: #444;
-        }
-        
-        /* Classe para animação de fade-in */
-        .fade-in {
-            animation: fadeIn 0.5s ease-in-out;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        /* Estilo para tarefa concluída */
-        .task-completed span {
+        /* Estilo quando a tarefa está concluída */
+        .task-item.completed {
+            border-left-color: #10b981; /* Borda verde */
+            background-color: #f0fff4; /* Fundo mais claro para concluído */
             text-decoration: line-through;
-            color: #6b7280; /* gray-500 */
+            color: #9ca3af;
         }
-        
-        /* Estilo customizado para os botões de modo do pomodoro */
-        .pomodoro-mode-btn.active {
-            background-color: rgba(255, 255, 255, 0.1);
+        /* Estilo para a área de conteúdo da tarefa */
+        .task-content {
+            display: flex;
+            align-items: center;
+            flex-grow: 1;
+        }
+        /* O ícone de check */
+        .task-check {
+            width: 24px;
+            height: 24px;
+            border: 2px solid #9ca3af;
+            border-radius: 4px;
+            margin-right: 12px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            transition: border-color 0.3s;
+        }
+        /* Estilo do checkmark (o V) */
+        .task-check-icon {
+            opacity: 0;
+            transition: opacity 0.3s;
             color: white;
+            font-weight: bold;
+        }
+        /* Estilo quando a tarefa está concluída: o ícone fica verde */
+        .task-item.completed .task-check {
+            background-color: #10b981;
+            border-color: #10b981;
+        }
+        /* Estilo quando a tarefa está concluída: o V aparece */
+        .task-item.completed .task-check-icon {
+            opacity: 1;
         }
     </style>
 </head>
-<body class="bg-gray-900 text-gray-100">
+<body class="bg-gray-50 min-h-screen p-4 md:p-8">
 
-    <div class="container mx-auto p-4 md:p-6 lg:p-8 max-w-7xl">
+    <div id="app" class="w-full max-w-xl mx-auto">
+        <h1 class="text-3xl font-extrabold text-gray-900 mb-6 text-center">
+            Lista de Afazeres (To-Do List)
+        </h1>
 
-        <!-- Cabeçalho -->
-        <header class="flex justify-between items-center mb-8 fade-in">
-            <div>
-                <h1 id="greeting" class="text-2xl md:text-3xl font-bold">Carregando...</h1>
-                <p class="text-gray-400">Pronto para um dia produtivo?</p>
-            </div>
-        </header>
+        <!-- Área de Input de Nova Tarefa -->
+        <div class="flex space-x-3 mb-8">
+            <input 
+                type="text" 
+                id="taskInput" 
+                placeholder="Ex: Comprar pão, Estudar JS, Ligar para a mãe..."
+                class="flex-grow p-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 shadow-sm transition duration-150"
+                aria-label="Nova Tarefa"
+            >
+            <button 
+                id="addTaskBtn"
+                class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-lg transition duration-300 shadow-md focus:outline-none focus:ring-4 focus:ring-blue-300 whitespace-nowrap"
+            >
+                Adicionar
+            </button>
+        </div>
+        
+        <!-- Contagem de Tarefas -->
+        <div class="mb-4 text-sm font-medium text-gray-600 flex justify-between">
+            <span id="taskCount">0 tarefas pendentes</span>
+            <button id="clearCompletedBtn" class="text-red-500 hover:text-red-700 transition duration-150 text-xs font-semibold">
+                Limpar Concluídas
+            </button>
+        </div>
 
-        <!-- Layout principal em grid -->
-        <main class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <!-- Lista de Tarefas -->
+        <ul id="taskList" class="space-y-3">
+            <!-- As tarefas serão inseridas aqui -->
+        </ul>
+        
+        <!-- Mensagem de lista vazia -->
+        <p id="emptyMessage" class="text-center text-gray-500 mt-10 italic hidden">
+            Você não tem tarefas! Adicione a primeira para começar.
+        </p>
 
-            <!-- Coluna Esquerda: Pomodoro -->
-            <div class="lg:col-span-1 fade-in" style="animation-delay: 0.1s;">
-                <div class="bg-gray-800/50 backdrop-blur-sm border border-gray-700/50 rounded-2xl p-6 h-full flex flex-col">
-                    <h2 class="text-xl font-semibold mb-4 flex items-center"><i data-lucide="timer" class="mr-2 h-5 w-5"></i>Timer Pomodoro</h2>
-                    
-                    <!-- Seletores de modo -->
-                    <div class="flex items-center justify-center bg-gray-900/50 rounded-full p-1 mb-6">
-                        <button id="mode-pomodoro" class="pomodoro-mode-btn w-full text-sm font-medium py-2 rounded-full text-gray-300 transition-colors duration-300 active">Foco</button>
-                        <button id="mode-short-break" class="pomodoro-mode-btn w-full text-sm font-medium py-2 rounded-full text-gray-300 transition-colors duration-300">Pausa Curta</button>
-                        <button id="mode-long-break" class="pomodoro-mode-btn w-full text-sm font-medium py-2 rounded-full text-gray-300 transition-colors duration-300">Pausa Longa</button>
-                    </div>
-
-                    <!-- Display do Timer -->
-                    <div class="my-auto flex flex-col items-center justify-center">
-                        <div id="timer-display" class="text-7xl md:text-8xl font-bold tracking-tighter text-cyan-400">
-                            25:00
-                        </div>
-                    </div>
-
-                    <!-- Controles -->
-                    <div class="flex justify-center items-center space-x-4 mt-6">
-                        <button id="start-pause-btn" class="bg-cyan-500 hover:bg-cyan-600 text-white font-bold py-3 px-8 rounded-full transition-all duration-300 transform hover:scale-105 flex items-center">
-                            <i id="play-pause-icon" data-lucide="play" class="h-6 w-6"></i>
-                        </button>
-                        <button id="reset-btn" class="bg-gray-700 hover:bg-gray-600 text-white font-bold p-3 rounded-full transition-all duration-300 transform hover:scale-105">
-                            <i data-lucide="rotate-cw" class="h-6 w-6"></i>
-                        </button>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Coluna Central: Gerenciador de Tarefas -->
-            <div class="lg:col-span-1 fade-in" style="animation-delay: 0.2s;">
-                <div class="bg-gray-800/50 backdrop-blur-sm border border-gray-700/50 rounded-2xl p-6 h-full flex flex-col">
-                    <h2 class="text-xl font-semibold mb-4 flex items-center"><i data-lucide="check-square" class="mr-2 h-5 w-5"></i>Lista de Tarefas</h2>
-                    
-                    <!-- Formulário para adicionar tarefa -->
-                    <form id="task-form" class="flex items-center mb-4">
-                        <input type="text" id="task-input" placeholder="Adicionar nova tarefa..." class="w-full bg-gray-900/50 border border-gray-700 rounded-lg py-2 px-4 focus:outline-none focus:ring-2 focus:ring-cyan-500 transition-all duration-300">
-                        <button type="submit" class="ml-2 bg-cyan-500 hover:bg-cyan-600 text-white p-2 rounded-lg transition-colors duration-300">
-                            <i data-lucide="plus" class="h-5 w-5"></i>
-                        </button>
-                    </form>
-
-                    <!-- Lista de Tarefas -->
-                    <div id="task-list" class="space-y-3 overflow-y-auto pr-2" style="max-height: 400px;">
-                        <!-- Tarefas serão inseridas aqui via JS -->
-                    </div>
-                </div>
-            </div>
-
-            <!-- Coluna Direita: Métricas -->
-            <div class="lg:col-span-1 fade-in" style="animation-delay: 0.3s;">
-                <div class="bg-gray-800/50 backdrop-blur-sm border border-gray-700/50 rounded-2xl p-6 h-full flex flex-col">
-                    <h2 class="text-xl font-semibold mb-4 flex items-center"><i data-lucide="bar-chart-2" class="mr-2 h-5 w-5"></i>Métricas do Dia</h2>
-                    
-                    <div class="space-y-6">
-                        <!-- Progresso das Tarefas -->
-                        <div>
-                            <div class="flex justify-between items-center mb-1 text-sm">
-                                <span>Progresso</span>
-                                <span><span id="completed-count">0</span> de <span id="total-count">0</span></span>
-                            </div>
-                            <div class="w-full bg-gray-700 rounded-full h-2.5">
-                                <div id="progress-bar" class="bg-cyan-400 h-2.5 rounded-full transition-all duration-500" style="width: 0%"></div>
-                            </div>
-                            <div class="text-right mt-1 text-xs text-gray-400"><span id="completion-percent">0</span>% concluído</div>
-                        </div>
-
-                        <!-- Sessões Pomodoro -->
-                        <div class="bg-gray-900/50 p-4 rounded-lg flex items-center justify-between">
-                            <div class="flex items-center">
-                                <i data-lucide="brain-circuit" class="mr-3 h-6 w-6 text-cyan-400"></i>
-                                <div>
-                                    <h3 class="font-medium">Sessões de Foco</h3>
-                                    <p class="text-xs text-gray-400">Ciclos de Pomodoro completos</p>
-                                </div>
-                            </div>
-                            <span id="pomodoro-count" class="text-2xl font-bold">0</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-        </main>
     </div>
 
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            // Inicializa os ícones Lucide
-            lucide.createIcons();
+        // Função para simular o crypto.randomUUID() caso o navegador não o suporte
+        const generateUUID = () => {
+            return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+                var r = Math.random() * 16 | 0, v = c === 'x' ? r : (r & 0x3 | 0x8);
+                return v.toString(16);
+            });
+        };
 
-            // --- Lógica da Saudação ---
-            const greetingEl = document.getElementById('greeting');
-            const hour = new Date().getHours();
-            if (hour < 12) {
-                greetingEl.textContent = 'Bom dia!';
-            } else if (hour < 18) {
-                greetingEl.textContent = 'Boa tarde!';
+        // Estado global das tarefas
+        let tasks = [];
+
+        // Referências aos elementos do DOM
+        const taskInput = document.getElementById('taskInput');
+        const addTaskBtn = document.getElementById('addTaskBtn');
+        const taskList = document.getElementById('taskList');
+        const taskCountElement = document.getElementById('taskCount');
+        const emptyMessage = document.getElementById('emptyMessage');
+        const clearCompletedBtn = document.getElementById('clearCompletedBtn');
+
+        // --- FUNÇÕES DE RENDERIZAÇÃO E ATUALIZAÇÃO DO ESTADO ---
+
+        // 1. Renderiza a tarefa na interface
+        function renderTask(task) {
+            // Cria o item da lista (<li>)
+            const listItem = document.createElement('li');
+            listItem.id = `task-${task.id}`;
+            // Usa as classes de estilo definidas no <style>
+            listItem.className = task.completed 
+                ? 'task-item completed' 
+                : 'task-item';
+            
+            listItem.innerHTML = `
+                <div class="task-content">
+                    <span class="task-check" aria-hidden="true">
+                        <!-- Icone de check (V) -->
+                        <span class="task-check-icon">✓</span>
+                    </span>
+                    <span class="task-text text-gray-900">${task.text}</span>
+                </div>
+                <button 
+                    data-id="${task.id}" 
+                    class="delete-btn text-red-500 hover:text-red-700 text-lg font-bold ml-4 p-1 rounded-full hover:bg-red-50 transition duration-150"
+                    aria-label="Excluir tarefa"
+                >
+                    &times;
+                </button>
+            `;
+
+            // Evento para marcar/desmarcar a tarefa
+            listItem.querySelector('.task-content').addEventListener('click', (e) => {
+                toggleTaskCompletion(task.id);
+            });
+
+            // Evento para excluir a tarefa
+            listItem.querySelector('.delete-btn').addEventListener('click', (e) => {
+                e.stopPropagation(); // Previne que o clique dispare o evento de 'toggle completion'
+                deleteTask(task.id);
+            });
+
+            return listItem;
+        }
+
+        // 2. Atualiza a lista completa no DOM e a contagem
+        function refreshTaskList() {
+            taskList.innerHTML = ''; // Limpa a lista existente
+            tasks.forEach(task => {
+                taskList.appendChild(renderTask(task));
+            });
+            updateTaskCount();
+            saveTasks(); // Salva o estado após cada alteração
+            updateEmptyMessage();
+        }
+
+        // 3. Atualiza a contagem de tarefas pendentes
+        function updateTaskCount() {
+            const pendingCount = tasks.filter(task => !task.completed).length;
+            taskCountElement.textContent = `${pendingCount} tarefa${pendingCount !== 1 ? 's' : ''} pendente${pendingCount !== 1 ? 's' : ''}`;
+        }
+        
+        // 4. Mostra/esconde a mensagem de lista vazia
+        function updateEmptyMessage() {
+            if (tasks.length === 0) {
+                emptyMessage.classList.remove('hidden');
             } else {
-                greetingEl.textContent = 'Boa noite!';
+                emptyMessage.classList.add('hidden');
+            }
+        }
+
+        // --- FUNÇÕES DE MANIPULAÇÃO DO ESTADO (CRUD) ---
+
+        // 5. Adiciona uma nova tarefa
+        function addTask() {
+            const text = taskInput.value.trim();
+            if (text === "") {
+                // Em vez de alert(), podemos dar um feedback visual (opcional)
+                taskInput.classList.add('border-red-500', 'ring-red-500');
+                setTimeout(() => taskInput.classList.remove('border-red-500', 'ring-red-500'), 1000);
+                return;
             }
 
-            // --- Lógica do Gerenciador de Tarefas ---
-            const taskForm = document.getElementById('task-form');
-            const taskInput = document.getElementById('task-input');
-            const taskList = document.getElementById('task-list');
-            
-            let tasks = JSON.parse(localStorage.getItem('tasks')) || [];
-
-            function saveTasks() {
-                localStorage.setItem('tasks', JSON.stringify(tasks));
-            }
-
-            function renderTasks() {
-                taskList.innerHTML = '';
-                if (tasks.length === 0) {
-                    taskList.innerHTML = `<p class="text-gray-500 text-center py-4">Nenhuma tarefa por enquanto.</p>`;
-                } else {
-                    tasks.forEach(task => {
-                        const taskElement = document.createElement('div');
-                        taskElement.className = `flex items-center bg-gray-900/50 p-3 rounded-lg transition-all duration-300 ${task.completed ? 'task-completed' : ''}`;
-                        taskElement.innerHTML = `
-                            <button class="toggle-task p-1" data-id="${task.id}">
-                                <i data-lucide="${task.completed ? 'check-circle-2' : 'circle'}" class="h-5 w-5 ${task.completed ? 'text-cyan-400' : 'text-gray-500'}"></i>
-                            </button>
-                            <span class="flex-grow mx-3">${task.text}</span>
-                            <button class="delete-task p-1 text-gray-500 hover:text-red-500 transition-colors" data-id="${task.id}">
-                                <i data-lucide="trash-2" class="h-5 w-5"></i>
-                            </button>
-                        `;
-                        taskList.appendChild(taskElement);
-                    });
-                }
-                lucide.createIcons();
-                updateMetrics();
-            }
-
-            taskForm.addEventListener('submit', (e) => {
-                e.preventDefault();
-                const taskText = taskInput.value.trim();
-                if (taskText) {
-                    tasks.push({ id: Date.now(), text: taskText, completed: false });
-                    taskInput.value = '';
-                    saveTasks();
-                    renderTasks();
-                }
-            });
-
-            taskList.addEventListener('click', (e) => {
-                const target = e.target.closest('button');
-                if (!target) return;
-
-                const id = Number(target.dataset.id);
-
-                if (target.classList.contains('toggle-task')) {
-                    const task = tasks.find(t => t.id === id);
-                    if (task) {
-                        task.completed = !task.completed;
-                        saveTasks();
-                        renderTasks();
-                    }
-                } else if (target.classList.contains('delete-task')) {
-                    tasks = tasks.filter(t => t.id !== id);
-                    saveTasks();
-                    renderTasks();
-                }
-            });
-
-            // --- Lógica das Métricas ---
-            const completedCountEl = document.getElementById('completed-count');
-            const totalCountEl = document.getElementById('total-count');
-            const progressBarEl = document.getElementById('progress-bar');
-            const completionPercentEl = document.getElementById('completion-percent');
-            const pomodoroCountEl = document.getElementById('pomodoro-count');
-
-            let pomodoroSessions = Number(localStorage.getItem('pomodoroSessions')) || 0;
-            
-            function updateMetrics() {
-                const totalTasks = tasks.length;
-                const completedTasks = tasks.filter(t => t.completed).length;
-                const percentage = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
-
-                completedCountEl.textContent = completedTasks;
-                totalCountEl.textContent = totalTasks;
-                progressBarEl.style.width = `${percentage}%`;
-                completionPercentEl.textContent = percentage;
-                pomodoroCountEl.textContent = pomodoroSessions;
-            }
-
-            function incrementPomodoroSession() {
-                pomodoroSessions++;
-                localStorage.setItem('pomodoroSessions', pomodoroSessions);
-                updateMetrics();
-            }
-
-            // --- Lógica do Pomodoro ---
-            const timerDisplay = document.getElementById('timer-display');
-            const startPauseBtn = document.getElementById('start-pause-btn');
-            const playPauseIcon = document.getElementById('play-pause-icon');
-            const resetBtn = document.getElementById('reset-btn');
-            const modeButtons = {
-                pomodoro: document.getElementById('mode-pomodoro'),
-                shortBreak: document.getElementById('mode-short-break'),
-                longBreak: document.getElementById('mode-long-break'),
+            const newTask = {
+                id: generateUUID(),
+                text: text,
+                completed: false
             };
 
-            const times = { pomodoro: 25 * 60, shortBreak: 5 * 60, longBreak: 15 * 60 };
-            let currentMode = 'pomodoro';
-            let timeLeft = times[currentMode];
-            let timerInterval = null;
-            let isRunning = false;
+            tasks.push(newTask);
+            taskInput.value = ''; // Limpa o input
+            taskInput.focus();
+            refreshTaskList();
+        }
 
-            function updateTimerDisplay() {
-                const minutes = Math.floor(timeLeft / 60);
-                const seconds = timeLeft % 60;
-                timerDisplay.textContent = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+        // 6. Alterna o estado de conclusão de uma tarefa
+        function toggleTaskCompletion(id) {
+            const taskIndex = tasks.findIndex(task => task.id === id);
+            if (taskIndex > -1) {
+                tasks[taskIndex].completed = !tasks[taskIndex].completed;
+                refreshTaskList();
             }
+        }
 
-            function playSound() {
-                // Cria um som simples sem precisar de arquivos de áudio externos
-                const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-                const oscillator = audioContext.createOscillator();
-                const gainNode = audioContext.createGain();
-
-                oscillator.type = 'sine';
-                oscillator.frequency.setValueAtTime(440, audioContext.currentTime); // A4
-                gainNode.gain.setValueAtTime(0.5, audioContext.currentTime);
-                gainNode.gain.exponentialRampToValueAtTime(0.00001, audioContext.currentTime + 1);
-
-                oscillator.connect(gainNode);
-                gainNode.connect(audioContext.destination);
-                
-                oscillator.start(audioContext.currentTime);
-                oscillator.stop(audioContext.currentTime + 1);
-            }
-
-            function startTimer() {
-                isRunning = true;
-                playPauseIcon.setAttribute('data-lucide', 'pause');
-                lucide.createIcons();
-                timerInterval = setInterval(() => {
-                    timeLeft--;
-                    updateTimerDisplay();
-                    if (timeLeft <= 0) {
-                        clearInterval(timerInterval);
-                        playSound();
-                        if (currentMode === 'pomodoro') {
-                            incrementPomodoroSession();
-                            // Sugere a próxima pausa, mas não inicia automaticamente
-                            switchMode('shortBreak', false);
-                        } else {
-                            switchMode('pomodoro', false);
-                        }
-                        isRunning = false;
-                        playPauseIcon.setAttribute('data-lucide', 'play');
-                        lucide.createIcons();
-                    }
-                }, 1000);
-            }
-
-            function pauseTimer() {
-                isRunning = false;
-                playPauseIcon.setAttribute('data-lucide', 'play');
-                lucide.createIcons();
-                clearInterval(timerInterval);
-            }
-
-            function resetTimer() {
-                pauseTimer();
-                timeLeft = times[currentMode];
-                updateTimerDisplay();
-            }
-
-            function switchMode(newMode, shouldStart = false) {
-                currentMode = newMode;
-                Object.values(modeButtons).forEach(btn => btn.classList.remove('active'));
-                modeButtons[newMode].classList.add('active');
-                resetTimer();
-                if (shouldStart) {
-                    startTimer();
+        // 7. Exclui uma tarefa
+        function deleteTask(id) {
+            tasks = tasks.filter(task => task.id !== id);
+            refreshTaskList();
+        }
+        
+        // 8. Limpa todas as tarefas concluídas
+        function clearCompletedTasks() {
+            const pendingTasks = tasks.filter(task => !task.completed);
+            if (pendingTasks.length < tasks.length) {
+                 // Cria uma simulação de modal/confirmação
+                if (window.confirm("Tem certeza que deseja remover todas as tarefas concluídas?")) {
+                    tasks = pendingTasks;
+                    refreshTaskList();
                 }
             }
-            
-            startPauseBtn.addEventListener('click', () => {
-                if (isRunning) {
-                    pauseTimer();
-                } else {
-                    startTimer();
-                }
-            });
+        }
 
-            resetBtn.addEventListener('click', resetTimer);
+        // --- PERSISTÊNCIA DE DADOS (LocalStorage) ---
 
-            modeButtons.pomodoro.addEventListener('click', () => switchMode('pomodoro'));
-            modeButtons.shortBreak.addEventListener('click', () => switchMode('shortBreak'));
-            modeButtons.longBreak.addEventListener('click', () => switchMode('longBreak'));
+        // 9. Salva as tarefas no LocalStorage
+        function saveTasks() {
+            // O LocalStorage é simples e perfeito para esta aplicação de um único usuário
+            localStorage.setItem('taskListTasks', JSON.stringify(tasks));
+        }
 
-            // --- Inicialização ---
-            renderTasks();
-            updateTimerDisplay();
+        // 10. Carrega as tarefas do LocalStorage
+        function loadTasks() {
+            const storedTasks = localStorage.getItem('taskListTasks');
+            if (storedTasks) {
+                tasks = JSON.parse(storedTasks);
+            }
+            refreshTaskList();
+        }
+
+        // --- INICIALIZAÇÃO ---
+
+        // Configura os ouvintes de eventos
+        addTaskBtn.addEventListener('click', addTask);
+        taskInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                addTask();
+            }
         });
+        clearCompletedBtn.addEventListener('click', clearCompletedTasks);
+
+
+        // Carrega as tarefas salvas quando a página carrega
+        window.onload = loadTasks;
+
     </script>
 </body>
 </html>
